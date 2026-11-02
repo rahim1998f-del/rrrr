@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "morphmod",
+  "version": "${version}",
+  "name": "Morph Mod",
+  "description": "Kill a mob to unlock it, then morph into it. Singleplayer MVP inspired by Budschie's Morph Mod.",
+  "authors": ["Rahim"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.rahim.morphmod.MorphMod"],
+    "client": ["dev.rahim.morphmod.client.MorphModClient"]
+  },
+  "mixins": ["morphmod.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

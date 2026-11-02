@@ -1,0 +1,10 @@
+{
+  "key.morphmod.menu": "Открыть меню морфов",
+  "key.category.morphmod.main": "Morph Mod",
+  "morphmod.screen.title": "Морфы",
+  "morphmod.demorph": "Вернуться в человека",
+  "morphmod.unlocked": "Морф получен: %s",
+  "morphmod.singleplayer_only": "Morph Mod работает только в одиночной игре",
+  "morphmod.morphed": "Вы превратились в: %s",
+  "morphmod.demorphed": "Вы снова человек"
+}
