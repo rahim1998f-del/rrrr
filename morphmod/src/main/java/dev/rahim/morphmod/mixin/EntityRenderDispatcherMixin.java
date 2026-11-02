@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 /** When the local player is rendered, render the dummy mob entity instead. */
 @Mixin(EntityRenderDispatcher.class)
 public abstract class EntityRenderDispatcherMixin {
-    @ModifyVariable(method = "extractEntity", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "method_72977", at = @At("HEAD"), argsOnly = true)
     private Entity morphmod$swapEntity(Entity entity) {
         Entity replacement = MorphModClient.getRenderReplacement(entity);
         return replacement != null ? replacement : entity;
