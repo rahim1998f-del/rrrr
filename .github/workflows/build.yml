@@ -5,6 +5,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: morphmod
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -16,4 +19,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: morphmod-jar
-          path: build/libs/morphmod-0.1.0.jar
+          path: morphmod/build/libs/morphmod-0.1.0.jar
