@@ -18,15 +18,15 @@ public class MorphMod implements ModInitializer {
     public void onInitialize() {
         MorphState.load();
 
-        // Kill a mob -> its soul appears; touch the soul to unlock the morph.
+        // Kill a mob -> its essence flows into you -> the morph is unlocked.
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
             if (!(entity instanceof Mob)) return;
-            if (source.getEntity() instanceof ServerPlayer && entity.level() instanceof ServerLevel level) {
-                MorphSouls.spawn(level, entity);
+            if (source.getEntity() instanceof ServerPlayer killer && entity.level() instanceof ServerLevel level) {
+                MorphAcquisition.start(level, killer, entity);
             }
         });
 
-        ServerTickEvents.END_SERVER_TICK.register(server -> MorphSouls.tick());
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> MorphSouls.clear());
+        ServerTickEvents.END_SERVER_TICK.register(server -> MorphAcquisition.tick());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> MorphAcquisition.clear());
     }
 }

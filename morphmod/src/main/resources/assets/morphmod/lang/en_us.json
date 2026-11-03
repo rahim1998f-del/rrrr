@@ -1,11 +1,12 @@
 {
-  "key.morphmod.menu": "Open morph menu",
   "key.category.morphmod.main": "Morph Mod",
-  "morphmod.screen.title": "Morphs",
-  "morphmod.demorph": "Back to human",
-  "morphmod.unlocked": "Morph unlocked: %s",
+  "key.morphmod.selector_up": "Selector: previous morph",
+  "key.morphmod.selector_down": "Selector: next morph",
+  "key.morphmod.selector_confirm": "Selector: confirm",
+  "key.morphmod.selector_cancel": "Selector: cancel",
+  "morphmod.human": "Human",
+  "morphmod.unlocked": "Morph acquired: %s",
   "morphmod.singleplayer_only": "Morph Mod works in singleplayer only",
   "morphmod.morphed": "You morphed into: %s",
-  "morphmod.demorphed": "You are human again",
-  "morphmod.empty": "No morphs yet. Kill a mob and touch its soul."
+  "morphmod.demorphed": "You are human again"
 }

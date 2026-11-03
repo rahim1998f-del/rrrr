@@ -1,11 +1,12 @@
 {
-  "key.morphmod.menu": "Открыть меню морфов",
   "key.category.morphmod.main": "Morph Mod",
-  "morphmod.screen.title": "Морфы",
-  "morphmod.demorph": "Вернуться в человека",
+  "key.morphmod.selector_up": "Селектор: предыдущий морф",
+  "key.morphmod.selector_down": "Селектор: следующий морф",
+  "key.morphmod.selector_confirm": "Селектор: подтвердить",
+  "key.morphmod.selector_cancel": "Селектор: отмена",
+  "morphmod.human": "Человек",
   "morphmod.unlocked": "Морф получен: %s",
   "morphmod.singleplayer_only": "Morph Mod работает только в одиночной игре",
   "morphmod.morphed": "Вы превратились в: %s",
-  "morphmod.demorphed": "Вы снова человек",
-  "morphmod.empty": "Морфов пока нет. Убейте моба и коснитесь его души."
+  "morphmod.demorphed": "Вы снова человек"
 }

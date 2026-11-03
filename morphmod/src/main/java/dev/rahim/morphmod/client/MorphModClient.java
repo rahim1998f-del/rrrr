@@ -7,6 +7,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -23,24 +24,33 @@ import org.lwjgl.glfw.GLFW;
 import java.util.UUID;
 
 public class MorphModClient implements ClientModInitializer {
-    private static KeyMapping menuKey;
+    private static KeyMapping keyUp, keyDown, keyConfirm, keyCancel;
     private static LivingEntity dummy;
+
+    /** Set while the HUD draws the "human" tile so the player is not swapped for the morph. */
+    public static boolean bypassSwap;
+
+    private static KeyMapping key(String name, int code, KeyMapping.Category category) {
+        return KeyBindingHelper.registerKeyBinding(
+                new KeyMapping(name, InputConstants.Type.KEYSYM, code, category));
+    }
 
     @Override
     public void onInitializeClient() {
         KeyMapping.Category category =
                 KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MorphMod.ID, "main"));
-        menuKey = KeyBindingHelper.registerKeyBinding(
-                new KeyMapping("key.morphmod.menu", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_M, category));
+        keyUp = key("key.morphmod.selector_up", GLFW.GLFW_KEY_LEFT_BRACKET, category);
+        keyDown = key("key.morphmod.selector_down", GLFW.GLFW_KEY_RIGHT_BRACKET, category);
+        keyConfirm = key("key.morphmod.selector_confirm", GLFW.GLFW_KEY_ENTER, category);
+        keyCancel = key("key.morphmod.selector_cancel", GLFW.GLFW_KEY_BACKSPACE, category);
 
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
-            while (menuKey.consumeClick()) {
-                if (mc.player != null && mc.screen == null) {
-                    mc.setScreen(new MorphScreen());
-                }
-            }
+            MorphSelector.tick(mc, keyUp, keyDown, keyConfirm, keyCancel);
             tickDummy(mc);
         });
+
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MorphMod.ID, "selector"),
+                (graphics, deltaTracker) -> MorphSelector.render(graphics, deltaTracker.getGameTimeDeltaPartialTick(false)));
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, mc) -> {
             MorphState.clearActive();
@@ -78,8 +88,9 @@ public class MorphModClient implements ClientModInitializer {
         return dummy != null;
     }
 
-    /** Called from the render mixin. */
+    /** Called from the render mixins. */
     public static Entity getRenderReplacement(Entity entity) {
+        if (bypassSwap) return null;
         Minecraft mc = Minecraft.getInstance();
         if (dummy != null && entity == mc.player) return dummy;
         return null;
