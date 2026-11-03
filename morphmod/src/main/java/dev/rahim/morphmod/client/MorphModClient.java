@@ -74,6 +74,10 @@ public class MorphModClient implements ClientModInitializer {
                 : Component.translatable("morphmod.morphed", type.getDescription()), true);
     }
 
+    public static boolean isMorphed() {
+        return dummy != null;
+    }
+
     /** Called from the render mixin. */
     public static Entity getRenderReplacement(Entity entity) {
         Minecraft mc = Minecraft.getInstance();

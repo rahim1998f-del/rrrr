@@ -18,9 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Vertical morph list on the left side of the screen (icon + name), like the original mod. */
+/**
+ * Morph list in the style of the classic Morph mod: a column of icon tiles glued to the
+ * left edge of the screen, with the mob name to the right of each tile.
+ */
 public class MorphScreen extends Screen {
-    private static final int LIST_X = 4, ROW_W = 150, ROW_H = 30, GAP = 2, BOX = 26;
+    private static final int TILE = 40;      // tile size (square)
+    private static final int STEP = TILE + 1; // tile + 1px gap
+    private static final int CLICK_W = 150;   // clickable width (tile + name)
 
     private final List<EntityType<?>> types;
     private final Map<EntityType<?>, LivingEntity> previews = new HashMap<>();
@@ -44,23 +49,24 @@ public class MorphScreen extends Screen {
 
     @Override
     protected void init() {
-        visible = Math.max(1, (height - 44) / (ROW_H + GAP));
+        visible = Math.max(1, (height - 26) / STEP);
         int maxScroll = Math.max(0, types.size() - visible);
         scroll = Math.max(0, Math.min(scroll, maxScroll));
 
         for (int i = 0; i < visible && scroll + i < types.size(); i++) {
             EntityType<?> t = types.get(scroll + i);
-            int y = 6 + i * (ROW_H + GAP);
-            addRenderableWidget(Button.builder(Component.empty(), b -> {
+            Button b = Button.builder(Component.empty(), btn -> {
                 MorphModClient.morph(t);
                 onClose();
-            }).bounds(LIST_X, y, ROW_W, ROW_H).build());
+            }).bounds(0, i * STEP, CLICK_W, TILE).build();
+            b.setAlpha(0.0F); // invisible hit-box, the tile is drawn in render()
+            addRenderableWidget(b);
         }
 
-        addRenderableWidget(Button.builder(Component.translatable("morphmod.demorph"), b -> {
+        addRenderableWidget(Button.builder(Component.translatable("morphmod.demorph"), btn -> {
             MorphModClient.morph(null);
             onClose();
-        }).bounds(LIST_X, height - 30, ROW_W, 20).build());
+        }).bounds(0, height - 22, CLICK_W, 20).build());
     }
 
     private LivingEntity preview(EntityType<?> t) {
@@ -84,7 +90,7 @@ public class MorphScreen extends Screen {
         super.render(g, mouseX, mouseY, partialTick);
 
         if (types.isEmpty()) {
-            g.drawString(this.font, Component.translatable("morphmod.empty"), LIST_X + ROW_W + 10, 12, 0xFFFFFFFF);
+            g.drawString(this.font, Component.translatable("morphmod.empty"), 8, 8, 0xFFFFFFFF);
         }
 
         Minecraft mc = Minecraft.getInstance();
@@ -92,19 +98,21 @@ public class MorphScreen extends Screen {
 
         for (int i = 0; i < visible && scroll + i < types.size(); i++) {
             EntityType<?> t = types.get(scroll + i);
-            int y = 6 + i * (ROW_H + GAP);
-            boolean hovered = mouseX >= LIST_X && mouseX < LIST_X + ROW_W && mouseY >= y && mouseY < y + ROW_H;
+            int y = i * STEP;
+            boolean hovered = mouseX >= 0 && mouseX < CLICK_W && mouseY >= y && mouseY < y + TILE;
             boolean selected = t == current;
+            boolean lit = hovered || selected;
 
-            int bx = LIST_X + 2, by = y + 2;
-            g.fill(bx, by, bx + BOX, by + BOX, 0xFF101010);
+            // tile frame + background
+            g.fill(0, y, TILE, y + TILE, lit ? 0xFFE6E6F5 : 0xFF2C2C3C);
+            g.fill(1, y + 1, TILE - 1, y + TILE - 1, lit ? 0xE0505068 : 0xE0181824);
 
             LivingEntity e = preview(t);
             if (e != null) {
                 try {
                     float size = Math.max(0.5F, Math.max(e.getBbHeight(), e.getBbWidth()));
-                    int scale = Math.max(3, Math.min(40, Math.round(20.0F / size)));
-                    InventoryScreen.renderEntityInInventoryFollowsMouse(g, bx, by, bx + BOX, by + BOX,
+                    int scale = Math.max(3, Math.min(40, Math.round(24.0F / size)));
+                    InventoryScreen.renderEntityInInventoryFollowsMouse(g, 2, y + 2, TILE - 2, y + TILE - 2,
                             scale, 0.0625F, mouseX, mouseY, e);
                 } catch (Throwable ex) {
                     failed.add(t);
@@ -112,12 +120,12 @@ public class MorphScreen extends Screen {
             }
 
             String name = t.getDescription().getString();
-            int maxW = ROW_W - BOX - 12;
+            int maxW = CLICK_W - TILE - 8;
             if (this.font.width(name) > maxW) {
                 name = this.font.plainSubstrByWidth(name, maxW - 8) + "...";
             }
-            int color = (hovered || selected) ? 0xFFFFFF55 : 0xFFFFFFFF;
-            g.drawString(this.font, Component.literal(name), bx + BOX + 6, y + (ROW_H - 8) / 2, color);
+            g.drawString(this.font, Component.literal(name), TILE + 5, y + (TILE - 8) / 2,
+                    lit ? 0xFFFFFF55 : 0xFFFFFFFF);
         }
     }
 
