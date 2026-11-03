@@ -6,5 +6,6 @@
   "morphmod.unlocked": "Морф получен: %s",
   "morphmod.singleplayer_only": "Morph Mod работает только в одиночной игре",
   "morphmod.morphed": "Вы превратились в: %s",
-  "morphmod.demorphed": "Вы снова человек"
+  "morphmod.demorphed": "Вы снова человек",
+  "morphmod.empty": "Морфов пока нет. Убейте моба и коснитесь его души."
 }

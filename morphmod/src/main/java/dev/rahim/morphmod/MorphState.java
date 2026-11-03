@@ -65,6 +65,10 @@ public final class MorphState {
         }
     }
 
+    public static synchronized boolean isUnlocked(EntityType<?> type) {
+        return UNLOCKED.contains(BuiltInRegistries.ENTITY_TYPE.getKey(type));
+    }
+
     /** @return true if this morph was new. */
     public static synchronized boolean unlock(EntityType<?> type) {
         Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(type);

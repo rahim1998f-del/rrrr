@@ -3,6 +3,6 @@
   "package": "dev.rahim.morphmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": ["PlayerMixin"],
-  "client": ["EntityRenderDispatcherMixin"],
+  "client": ["EntityRenderDispatcherMixin", "InventoryScreenMixin"],
   "injectors": { "defaultRequire": 1 }
 }

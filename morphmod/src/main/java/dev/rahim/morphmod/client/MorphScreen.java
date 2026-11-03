@@ -18,13 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/** Vertical morph list on the left side of the screen (icon + name), like the original mod. */
 public class MorphScreen extends Screen {
-    private static final int TILE_W = 64, TILE_H = 80, GAP = 4;
+    private static final int LIST_X = 4, ROW_W = 150, ROW_H = 30, GAP = 2, BOX = 26;
 
     private final List<EntityType<?>> types;
     private final Map<EntityType<?>, LivingEntity> previews = new HashMap<>();
     private final Set<EntityType<?>> failed = new HashSet<>();
-    private int page, cols, perPage, pages, startX, startY;
+    private int scroll, visible;
 
     public MorphScreen() {
         super(Component.translatable("morphmod.screen.title"));
@@ -32,47 +33,34 @@ public class MorphScreen extends Screen {
     }
 
     @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    /** No dark/blurred background: the world stays visible behind the list. */
+    @Override
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    }
+
+    @Override
     protected void init() {
-        cols = Math.max(1, Math.min(10, (width - 30) / (TILE_W + GAP)));
-        int rows = Math.max(1, (height - 90) / (TILE_H + GAP));
-        perPage = cols * rows;
-        pages = Math.max(1, (types.size() + perPage - 1) / perPage);
-        if (page >= pages) page = pages - 1;
-        if (page < 0) page = 0;
+        visible = Math.max(1, (height - 44) / (ROW_H + GAP));
+        int maxScroll = Math.max(0, types.size() - visible);
+        scroll = Math.max(0, Math.min(scroll, maxScroll));
 
-        startX = (width - (cols * (TILE_W + GAP) - GAP)) / 2;
-        startY = 28;
-        int from = page * perPage;
-
-        for (int i = 0; i < perPage && from + i < types.size(); i++) {
-            EntityType<?> t = types.get(from + i);
-            int x = startX + (i % cols) * (TILE_W + GAP);
-            int y = startY + (i / cols) * (TILE_H + GAP);
+        for (int i = 0; i < visible && scroll + i < types.size(); i++) {
+            EntityType<?> t = types.get(scroll + i);
+            int y = 6 + i * (ROW_H + GAP);
             addRenderableWidget(Button.builder(Component.empty(), b -> {
                 MorphModClient.morph(t);
                 onClose();
-            }).bounds(x, y, TILE_W, TILE_H).build());
+            }).bounds(LIST_X, y, ROW_W, ROW_H).build());
         }
-
-        int by = height - 28;
-        Button prev = Button.builder(Component.literal("<"), b -> {
-            page--;
-            rebuildWidgets();
-        }).bounds(width / 2 - 125, by, 30, 20).build();
-        prev.active = page > 0;
-        addRenderableWidget(prev);
 
         addRenderableWidget(Button.builder(Component.translatable("morphmod.demorph"), b -> {
             MorphModClient.morph(null);
             onClose();
-        }).bounds(width / 2 - 90, by, 180, 20).build());
-
-        Button next = Button.builder(Component.literal(">"), b -> {
-            page++;
-            rebuildWidgets();
-        }).bounds(width / 2 + 95, by, 30, 20).build();
-        next.active = page < pages - 1;
-        addRenderableWidget(next);
+        }).bounds(LIST_X, height - 30, ROW_W, 20).build());
     }
 
     private LivingEntity preview(EntityType<?> t) {
@@ -94,46 +82,55 @@ public class MorphScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         super.render(g, mouseX, mouseY, partialTick);
-        g.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 
-        int from = page * perPage;
-        for (int i = 0; i < perPage && from + i < types.size(); i++) {
-            EntityType<?> t = types.get(from + i);
-            int x = startX + (i % cols) * (TILE_W + GAP);
-            int y = startY + (i / cols) * (TILE_H + GAP);
+        if (types.isEmpty()) {
+            g.drawString(this.font, Component.translatable("morphmod.empty"), LIST_X + ROW_W + 10, 12, 0xFFFFFFFF);
+        }
+
+        Minecraft mc = Minecraft.getInstance();
+        EntityType<?> current = mc.player == null ? null : MorphState.getActive(mc.player.getUUID());
+
+        for (int i = 0; i < visible && scroll + i < types.size(); i++) {
+            EntityType<?> t = types.get(scroll + i);
+            int y = 6 + i * (ROW_H + GAP);
+            boolean hovered = mouseX >= LIST_X && mouseX < LIST_X + ROW_W && mouseY >= y && mouseY < y + ROW_H;
+            boolean selected = t == current;
+
+            int bx = LIST_X + 2, by = y + 2;
+            g.fill(bx, by, bx + BOX, by + BOX, 0xFF101010);
 
             LivingEntity e = preview(t);
             if (e != null) {
                 try {
                     float size = Math.max(0.5F, Math.max(e.getBbHeight(), e.getBbWidth()));
-                    int scale = Math.max(3, Math.min(60, Math.round(34.0F / size)));
-                    InventoryScreen.renderEntityInInventoryFollowsMouse(g, x + 2, y + 4, x + TILE_W - 2,
-                            y + TILE_H - 18, scale, 0.0625F, mouseX, mouseY, e);
+                    int scale = Math.max(3, Math.min(40, Math.round(20.0F / size)));
+                    InventoryScreen.renderEntityInInventoryFollowsMouse(g, bx, by, bx + BOX, by + BOX,
+                            scale, 0.0625F, mouseX, mouseY, e);
                 } catch (Throwable ex) {
                     failed.add(t);
                 }
             }
 
             String name = t.getDescription().getString();
-            if (this.font.width(name) > TILE_W - 4) {
-                name = this.font.plainSubstrByWidth(name, TILE_W - 12) + "...";
+            int maxW = ROW_W - BOX - 12;
+            if (this.font.width(name) > maxW) {
+                name = this.font.plainSubstrByWidth(name, maxW - 8) + "...";
             }
-            g.drawCenteredString(this.font, Component.literal(name), x + TILE_W / 2, y + TILE_H - 14, 0xFFFFFFFF);
+            int color = (hovered || selected) ? 0xFFFFFF55 : 0xFFFFFFFF;
+            g.drawString(this.font, Component.literal(name), bx + BOX + 6, y + (ROW_H - 8) / 2, color);
         }
-
-        g.drawCenteredString(this.font, Component.literal((page + 1) + " / " + pages),
-                this.width / 2, this.height - 42, 0xFFAAAAAA);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (scrollY < 0 && page < pages - 1) {
-            page++;
+        int maxScroll = Math.max(0, types.size() - visible);
+        if (scrollY < 0 && scroll < maxScroll) {
+            scroll++;
             rebuildWidgets();
             return true;
         }
-        if (scrollY > 0 && page > 0) {
-            page--;
+        if (scrollY > 0 && scroll > 0) {
+            scroll--;
             rebuildWidgets();
             return true;
         }

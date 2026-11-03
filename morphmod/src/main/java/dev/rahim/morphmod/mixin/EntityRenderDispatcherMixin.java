@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-/** When the local player is rendered, render the dummy mob entity instead. */
+/** When the local player is rendered, render the dummy mob entity instead. (method_72977 = extractEntity) */
 @Mixin(EntityRenderDispatcher.class)
 public abstract class EntityRenderDispatcherMixin {
     @ModifyVariable(method = "method_72977", at = @At("HEAD"), argsOnly = true)

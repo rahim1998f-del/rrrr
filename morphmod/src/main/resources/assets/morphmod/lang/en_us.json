@@ -6,5 +6,6 @@
   "morphmod.unlocked": "Morph unlocked: %s",
   "morphmod.singleplayer_only": "Morph Mod works in singleplayer only",
   "morphmod.morphed": "You morphed into: %s",
-  "morphmod.demorphed": "You are human again"
+  "morphmod.demorphed": "You are human again",
+  "morphmod.empty": "No morphs yet. Kill a mob and touch its soul."
 }
