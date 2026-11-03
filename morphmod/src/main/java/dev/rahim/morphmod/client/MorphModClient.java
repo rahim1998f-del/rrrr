@@ -115,6 +115,9 @@ public class MorphModClient implements ClientModInitializer {
         d.xo = d.getX();
         d.yo = d.getY();
         d.zo = d.getZ();
+        d.xOld = d.getX();
+        d.yOld = d.getY();
+        d.zOld = d.getZ();
         d.setPos(p.getX(), p.getY(), p.getZ());
         d.setDeltaMovement(p.getDeltaMovement());
 
